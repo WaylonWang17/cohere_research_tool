@@ -6,6 +6,12 @@ from exa_py import Exa
 from dotenv import load_dotenv
 from cohere.types import TextAssistantMessageResponseContentItem
 
+question = input("what would you like to research?\n")
+
+if not question:
+    print('no question asked')
+    exit()
+
 load_dotenv()
 
 exa = Exa(os.getenv("EXA_API_KEY"))
@@ -48,7 +54,8 @@ tools = [
 ]
 
 messages = [
-    {"role": "user", "content": "Find the linkedin influencer with the most followers"}
+    {"role": "user", "content": question},
+    # {"role": "user", "content": "Find the linkedin influencer with the most followers"}
 ]
 
 #send users question + available tools to model so it can decide if it needs to call tools
