@@ -47,8 +47,17 @@ def exa_func(prompt):
         for r in response.results
     ]
 
+def save_notes(filename, content):
+    filename = os.path.basename(filename) #strip any path separators so files can't be written outside notes/
+    os.makedirs("notes", exist_ok=True)
+    path = os.path.join("notes", filename)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+    return [{"status": "saved", "path": path}]
+
 functions_map = {"exa": exa_func,
-                 "wikipedia": wikipedia_search} #maps string to function name so function can be called
+                 "wikipedia": wikipedia_search,
+                 "save_notes": save_notes} #maps string to function name so function can be called
 
 tools = [
     {
@@ -88,6 +97,27 @@ tools = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "save_notes",
+            "description": "saves research findings to a local markdown file for the user",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename": {
+                        "type": "string",
+                        "description": "name of the file to save, e.g. 'eiffel_tower.md'",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "the markdown content to write to the file",
+                    },
+                },
+                "required": ["filename", "content"],
+            },
+        },
+    },
 ]
 
 messages = [
@@ -100,14 +130,18 @@ response = co.chat(
     model="command-a-plus-05-2026", messages=messages, tools=tools
 )
 
-#checks to see if model used tool call
-if response.message.tool_calls:
+#loop until the model stops asking for tool calls, with a safety cap on iterations
+max_iterations = 8
+for _ in range(max_iterations):
+    if not response.message.tool_calls:
+        break
+
     messages.append(response.message) #append message asking for tool in messages
     for tc in response.message.tool_calls: #loops through all tool calls
         function_name = tc.function.name #inside of tools => function => name
-        print(f"[tool call] {function_name}({tc.function.arguments})")  # debug to see which tool got called
+        print(f"[tool call] {function_name}")  # debug to see which tool got called
         function_arguments = json.loads(tc.function.arguments) #parse argument from json string into python dict. Model generates '{"prompt": "linkedin influencer with most followers"}' and json.laod changes to {"prompt": "linkedin influencer with most followers"}
-        function_to_call = functions_map[function_name] #look up python function by name 
+        function_to_call = functions_map[function_name] #look up python function by name
         tool_result = function_to_call(**function_arguments) #unpack argument dict as keyword args converts {"prompt": "linkedin influencer with most followers"} to prompt=linkedin influencer with most followers
         tool_content = []
         for data in tool_result:
@@ -126,10 +160,10 @@ if response.message.tool_calls:
             }
         )
 
-#original question + tool call + tools response and now cohere agent will form a response with all this info 
-response = co.chat(
-    model="command-a-plus-05-2026", messages=messages, tools=tools
-)
+    #original question + tool call + tools response and now cohere agent will form a response with all this info
+    response = co.chat(
+        model="command-a-plus-05-2026", messages=messages, tools=tools
+    )
 
 if response.message.content:
     for item in response.message.content:
