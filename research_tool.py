@@ -48,6 +48,9 @@ def exa_func(prompt):
     return results
 
 def save_notes(filename, content):
+    '''
+    saves to cohere/notes for traceback
+    '''
     filename = os.path.basename(filename) #strip any path separators so files can't be written outside notes/
     os.makedirs("notes", exist_ok=True)
     path = os.path.join("notes", filename)
