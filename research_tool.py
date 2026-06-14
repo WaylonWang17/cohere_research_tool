@@ -52,7 +52,7 @@ def save_notes(filename, content):
     os.makedirs("notes", exist_ok=True)
     path = os.path.join("notes", filename)
     with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
+        f.write(f'# Research Question\n\n{question}\n\n---\n\n{content}')
     return [{"status": "saved", "path": path}]
 
 functions_map = {"exa": exa_func,
