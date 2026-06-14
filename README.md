@@ -1,4 +1,14 @@
-# cohere
+# cohere research tool
+
+# core features
+- cohere command a plus model
+- system prompt for saving token usage
+- 3 tool calls
+    - exa tool for up to date research
+    - wikipedia api for background knowledge
+    - save notes of research (markdown)
+- agentic loop for thinking (max iterations = 5)
+- simple ui on separate branch
 
 agentic systems
 1. define functions for tools
