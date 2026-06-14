@@ -41,10 +41,11 @@ def exa_func(prompt):
         type="auto",
         contents={"highlights": True},
     )
-    return [
-        {"url": r.url, "title": r.title, "highlights": r.highlights}
-        for r in response.results
-    ]
+
+    results = []
+    for r in response.results:
+        results.append({"url": r.url, "title": r.title, "highlights": r.highlights})
+    return results
 
 def save_notes(filename, content):
     filename = os.path.basename(filename) #strip any path separators so files can't be written outside notes/
