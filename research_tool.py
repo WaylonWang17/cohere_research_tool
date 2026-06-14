@@ -2,7 +2,6 @@ import os
 import cohere
 import json
 import wikipediaapi
-import requests
 
 from exa_py import Exa
 from dotenv import load_dotenv
