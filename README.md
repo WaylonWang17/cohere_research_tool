@@ -9,6 +9,9 @@
     - save notes of research (markdown)
 - agentic loop for thinking (max iterations = 5)
 - simple ui on separate branch
+    - to run streamlit ui 
+        - .\venv\Scripts\Activate.ps1 
+        - streamlit run streamlit_app.py
 
 agentic systems
 1. define functions for tools
