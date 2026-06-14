@@ -5,7 +5,7 @@ import wikipediaapi
 
 from exa_py import Exa
 from dotenv import load_dotenv
-from cohere.types import TextAssistantMessageResponseContentItem
+from cohere.types import TextAssistantMessageResponseContentItem #helps check "is this specific item a plain text response"
 
 question = input("what would you like to research?\n")
 
@@ -28,7 +28,7 @@ def wikipedia_search(query):
     if not results.pages:
         return [{'error': f'No wikipedia page found for {query}'}]
 
-    page = next(iter(results.pages.values()))
+    page = list(results.pages.values())[0]
     return [{"url": page.fullurl, "title": page.title, "summary": page.summary}]
 
 
