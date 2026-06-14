@@ -158,13 +158,15 @@ for _ in range(max_iterations):
         tool_result = function_to_call(**function_arguments) #unpack argument dict as keyword args converts {"prompt": "linkedin influencer with most followers"} to prompt=linkedin influencer with most followers
         tool_content = []
         for data in tool_result:
+            '''
+            converts tools raw results into coheres chat api format 
+            '''
             tool_content.append(
                 {
-                    "type": "document",
+                    "type": "document", #document is the type for external info injected into convo
                     "document": {"data": json.dumps(data)}, #json.dump serializes back to json
                 }
             )
-            # Optional: add an "id" field in the "document" object, otherwise IDs are auto-generated
         messages.append(
             {
                 "role": "tool",
@@ -183,3 +185,5 @@ if response.message.content:
         if isinstance(item, TextAssistantMessageResponseContentItem):
             print(item.text)
             break
+else:
+    print("no response :(")
