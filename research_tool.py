@@ -128,7 +128,7 @@ messages = [
 - exa: use for current events and recent information  
 - save_notes: use last to save a comprehensive markdown report of your findings
 
-Always search wikipedia first, then exa for current context, then synthesize and save."""
+Start with wikipedia for background. Only call exa if it's actually needed for current information. Then synthesize and save.""",
     },
     {"role": "user", "content": question},
     # {"role": "user", "content": "Find the linkedin influencer with the most followers"}
