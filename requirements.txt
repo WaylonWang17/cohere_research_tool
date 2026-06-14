@@ -1,0 +1,4 @@
+cohere==7.0.3
+exa-py==2.13.0
+python-dotenv==1.2.2
+wikipedia-api==0.15.0
