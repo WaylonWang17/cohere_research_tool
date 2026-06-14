@@ -121,6 +121,15 @@ tools = [
 ]
 
 messages = [
+    {
+        "role": "system",
+        "content": """You are a research assistant with access to three tools:
+- wikipedia: use first for background context and established facts
+- exa: use for current events and recent information  
+- save_notes: use last to save a comprehensive markdown report of your findings
+
+Always search wikipedia first, then exa for current context, then synthesize and save."""
+    },
     {"role": "user", "content": question},
     # {"role": "user", "content": "Find the linkedin influencer with the most followers"}
 ]
@@ -131,7 +140,7 @@ response = co.chat(
 )
 
 #loop until the model stops asking for tool calls, with a safety cap on iterations
-max_iterations = 8
+max_iterations = 5
 for _ in range(max_iterations):
     if not response.message.tool_calls:
         break
