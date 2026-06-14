@@ -7,7 +7,7 @@ from exa_py import Exa
 from dotenv import load_dotenv
 from cohere.types import TextAssistantMessageResponseContentItem #helps check "is this specific item a plain text response"
 
-question = input("what would you like to research?\n")
+question = input("What would you like to research?\n")
 
 if not question:
     print('no question asked')
