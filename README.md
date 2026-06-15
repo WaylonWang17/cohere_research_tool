@@ -1,7 +1,7 @@
 # cohere research tool
 
 # design schema
-![alt text](image.png)
+![alt text](image-1.png)
 
 # core features
 - cohere command a plus model
