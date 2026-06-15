@@ -22,7 +22,7 @@ python weather_agent.py
 
 ## Architecture
 
-Two independent scripts — no shared modules.
+Independent scripts — no shared modules.
 
 **[main.py](main.py)** — asyncio playground demonstrating concurrent coroutines with `asyncio.gather`.
 
@@ -32,6 +32,13 @@ Two independent scripts — no shared modules.
 3. Call `co.chat()` again with the full message history to get the final answer
 
 Uses `cohere.ClientV2` with model `command-a-plus-05-2026`. Tool results are wrapped as `document` typed content before being sent back.
+
+**[research_tool.py](research_tool.py)** — Cohere tool-use research agent with the same `co.chat()` tool-call loop as `weather_agent.py`, plus three tools:
+- `wikipedia` — searches up to 5 Wikipedia pages, then uses `co.rerank()` (`rerank-v4.0-pro`) to pick the single best-matching page for background context.
+- `exa` — searches the live web via Exa, then uses `co.rerank()` to score results against the query and returns the top 3 (each tagged with `relevance_score`).
+- `save_notes` — writes a markdown research report to `notes/`.
+
+Requires `EXA_API_KEY` in `.env` in addition to `COHERE_API_KEY`.
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://exa.ai/docs/llms.txt

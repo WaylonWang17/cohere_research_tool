@@ -22,19 +22,25 @@ wiki = wikipediaapi.Wikipedia(user_agent='research_tool (waylon.wang17@gmail.com
 
 def wikipedia_search(query):
     '''
-    background knowledge
+    background knowledge, reranked to pick the most relevant page
     '''
-    results = wiki.search(query, limit=1)
+    results = wiki.search(query, limit=5)
     if not results.pages:
         return [{'error': f'No wikipedia page found for {query}'}]
 
-    page = list(results.pages.values())[0]
-    return [{"url": page.fullurl, "title": page.title, "summary": page.summary}]
+    pages = list(results.pages.values())
+    documents = [f"{page.title} {page.summary}" for page in pages]
+
+    rerank_response = co.rerank(model="rerank-v4.0-pro", query=query, documents=documents, top_n=1)
+
+    best = rerank_response.results[0]
+    page = pages[best.index]
+    return [{"url": page.fullurl, "title": page.title, "summary": page.summary, "relevance_score": best.relevance_score}]
 
 
 def exa_func(prompt):
     '''
-    up to date info
+    up to date info, reranked to surface the most relevant results
     '''
     response = exa.search(
         prompt,
@@ -45,7 +51,20 @@ def exa_func(prompt):
     results = []
     for r in response.results:
         results.append({"url": r.url, "title": r.title, "highlights": r.highlights})
-    return results
+
+    if not results:
+        return results
+
+    documents = [f"{r['title']} {' '.join(r['highlights'])}" for r in results]
+    rerank_response = co.rerank(model="rerank-v4.0-pro", query=prompt, documents=documents, top_n=min(3, len(documents)))
+
+    reranked = []
+    for item in rerank_response.results:
+        result = results[item.index]
+        result["relevance_score"] = item.relevance_score
+        reranked.append(result)
+
+    return reranked
 
 def save_notes(filename, content):
     '''
