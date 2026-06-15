@@ -29,7 +29,10 @@ def wikipedia_search(query):
         return [{'error': f'No wikipedia page found for {query}'}]
 
     pages = list(results.pages.values())
-    documents = [f"{page.title} {page.summary}" for page in pages]
+    documents = []
+    for page in pages:
+        document_text = page.title + " " + page.summary
+        documents.append(document_text)
 
     rerank_response = co.rerank(model="rerank-v4.0-pro", query=query, documents=documents, top_n=1)
 
@@ -55,7 +58,13 @@ def exa_func(prompt):
     if not results:
         return results
 
-    documents = [f"{r['title']} {' '.join(r['highlights'])}" for r in results]
+    documents = []
+    for r in results:
+        highlights_text = ""
+        for highlight in r["highlights"]:
+            highlights_text = highlights_text + " " + highlight
+        document_text = r["title"] + highlights_text
+        documents.append(document_text)
     rerank_response = co.rerank(model="rerank-v4.0-pro", query=prompt, documents=documents, top_n=min(3, len(documents)))
 
     reranked = []
