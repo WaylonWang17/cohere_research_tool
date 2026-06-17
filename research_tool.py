@@ -14,7 +14,7 @@ exa = Exa(os.getenv("EXA_API_KEY"))
 co = cohere.ClientV2(os.getenv("COHERE_API_KEY"))
 wiki = wikipediaapi.Wikipedia(user_agent='research_tool (waylon.wang17@gmail.com)', language='en')
 
-question = ""  # set by __main__ block; save_notes reads this for the report header
+question = ""  #for tests
 
 def wikipedia_search(query):
     '''
