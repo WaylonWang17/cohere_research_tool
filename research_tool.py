@@ -7,18 +7,14 @@ from exa_py import Exa
 from dotenv import load_dotenv
 from cohere.types import TextAssistantMessageResponseContentItem #helps check "is this specific item a plain text response"
 
-question = input("What would you like to research?\n")
-
-if not question:
-    print('no question asked')
-    exit()
-
 load_dotenv()
 
 # clients
 exa = Exa(os.getenv("EXA_API_KEY"))
 co = cohere.ClientV2(os.getenv("COHERE_API_KEY"))
 wiki = wikipediaapi.Wikipedia(user_agent='research_tool (waylon.wang17@gmail.com)', language='en')
+
+question = ""  # set by __main__ block; save_notes reads this for the report header
 
 def wikipedia_search(query):
     '''
@@ -151,67 +147,74 @@ tools = [
     },
 ]
 
-#system prompt for saving token consumption
-messages = [
-    {
-        "role": "system",
-        "content": """You are a research assistant with access to three tools:
+if __name__ == "__main__":
+    question = input("What would you like to research?\n")
+
+    if not question:
+        print('no question asked')
+        exit()
+
+    #system prompt for saving token consumption
+    messages = [
+        {
+            "role": "system",
+            "content": """You are a research assistant with access to three tools:
 - wikipedia: use first for background context and established facts
-- exa: use for current events and recent information  
+- exa: use for current events and recent information
 - save_notes: use last to save a comprehensive markdown report of your findings
 
 Start with wikipedia for background. Only call exa if it's actually needed for current information. Then synthesize and save.""",
-    },
-    {"role": "user", "content": question},
-    # {"role": "user", "content": "Find the linkedin influencer with the most followers"}
-]
+        },
+        {"role": "user", "content": question},
+        # {"role": "user", "content": "Find the linkedin influencer with the most followers"}
+    ]
 
-#send users question + available tools to model so it can decide if it needs to call tools
-response = co.chat(
-    model="command-a-plus-05-2026", messages=messages, tools=tools
-)
-
-#loop until the model stops asking for tool calls, with a safety cap on iterations
-max_iterations = 5
-for _ in range(max_iterations):
-    if not response.message.tool_calls:
-        break
-
-    messages.append(response.message) #append message asking for tool in messages
-    for tc in response.message.tool_calls: #loops through all tool calls
-        function_name = tc.function.name #inside of tools => function => name
-        print(f"[tool call] {function_name}")  # debug to see which tool got called
-        function_arguments = json.loads(tc.function.arguments) #parse argument from json string into python dict. Model generates '{"prompt": "linkedin influencer with most followers"}' and json.laod changes to {"prompt": "linkedin influencer with most followers"}
-        function_to_call = functions_map[function_name] #look up python function by name
-        tool_result = function_to_call(**function_arguments) #unpack argument dict as keyword args converts {"prompt": "linkedin influencer with most followers"} to prompt=linkedin influencer with most followers
-        tool_content = []
-        for data in tool_result:
-            '''
-            converts tools raw results into coheres chat api format 
-            '''
-            tool_content.append(
-                {
-                    "type": "document", #document is the type for external info injected into convo
-                    "document": {"data": json.dumps(data)}, #json.dump serializes back to json
-                }
-            )
-        messages.append(
-            {
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": tool_content,
-            }
-        )
-
-    #original question + tool call + tools response and now cohere agent will form a response with all this info
+    #send users question + available tools to model so it can decide if it needs to call tools
     response = co.chat(
         model="command-a-plus-05-2026", messages=messages, tools=tools
     )
 
-if response.message.content:
-    for item in response.message.content:
-        if isinstance(item, TextAssistantMessageResponseContentItem):
-            print(item.text)
+    #loop until the model stops asking for tool calls, with a safety cap on iterations
+    max_iterations = 5
+    for _ in range(max_iterations):
+        if not response.message.tool_calls:
             break
-else:
-    print("no response :(")
+
+        messages.append(response.message) #append message asking for tool in messages
+        for tc in response.message.tool_calls: #loops through all tool calls
+            function_name = tc.function.name #inside of tools => function => name
+            print(f"[tool call] {function_name}")  # debug to see which tool got called
+            function_arguments = json.loads(tc.function.arguments) #parse argument from json string into python dict. Model generates '{"prompt": "linkedin influencer with most followers"}' and json.laod changes to {"prompt": "linkedin influencer with most followers"}
+            function_to_call = functions_map[function_name] #look up python function by name
+            tool_result = function_to_call(**function_arguments) #unpack argument dict as keyword args converts {"prompt": "linkedin influencer with most followers"} to prompt=linkedin influencer with most followers
+            tool_content = []
+            for data in tool_result:
+                '''
+                converts tools raw results into coheres chat api format
+                '''
+                tool_content.append(
+                    {
+                        "type": "document", #document is the type for external info injected into convo
+                        "document": {"data": json.dumps(data)}, #json.dump serializes back to json
+                    }
+                )
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": tool_content,
+                }
+            )
+
+        #original question + tool call + tools response and now cohere agent will form a response with all this info
+        response = co.chat(
+            model="command-a-plus-05-2026", messages=messages, tools=tools
+        )
+
+    if response.message.content:
+        for item in response.message.content:
+            if isinstance(item, TextAssistantMessageResponseContentItem):
+                print(item.text)
+                break
+    else:
+        print("no response :(")
