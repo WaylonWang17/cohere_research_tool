@@ -1,7 +1,7 @@
 # cohere research tool
 
 # design schema
-![alt text](image-1.png)
+<img width="1434" height="1034" alt="image" src="https://github.com/user-attachments/assets/2e22fb9c-e6fd-490e-8485-37a4b0ab5127" />
 
 # core features
 - cohere command a plus model
