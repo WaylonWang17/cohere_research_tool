@@ -1,4 +1,4 @@
-# cohere research tool
+# multi tool research agent
 
 # design schema
 ![alt text](image-2.png)
